@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Counter with Bookmark</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    body {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 100px;
+    }
+    
+    h1 {
+      font-size: 36px;
+      user-select: none; /* Prevent text selection */
+    }
+    
+    p#counter {
+      font-size: 36px;
+      user-select: none; /* Prevent text selection */
+    }
+    
+    p#cycleCount {
+      font-size: 18px;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      user-select: none; /* Prevent text selection */
+    }
+    
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      user-select: none; /* Prevent text selection */
+    }
+    
+    #resetButton {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+    }
+    
+    /* Media query for mobile devices */
+    @media (max-width: 600px) {
+      body {
+        font-size: 18px;
+        margin-top: 50px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      p#counter {
+        font-size: 24px;
+      }
+      
+      p#cycleCount {
+        font-size: 18px;
+        top: 10px;
+        right: 10px;
+      }
+      
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+
+      #incrementButton {
+        width: 320px; /* Adjust the width as per your requirement */
+        height: 67vh;
+        border-radius: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Count</h1>
+  <p id="counter">0</p>
+  <p id="cycleCount">Rounds: 0</p>
+  <button id="resetButton">Reset</button>
+  <button id="incrementButton">Add</button>
+
+  <script>
+    let count = parseInt(localStorage.getItem('count')) || 0;
+    let cycleCount = parseInt(localStorage.getItem('cycleCount')) || 0;
+    const counterElement = document.getElementById('counter');
+    const cycleCountElement = document.getElementById('cycleCount');
+    counterElement.textContent = count.toString();
+    cycleCountElement.textContent = "Rounds: " + cycleCount;
+
+    const incrementButton = document.getElementById('incrementButton');
+    let incrementButtonPressed = false;
+
+    incrementButton.addEventListener('touchstart', function(event) {
+      event.preventDefault(); // Prevent the default touch behavior
+      incrementButtonPressed = true;
+    });
+
+    incrementButton.addEventListener('touchend', function(event) {
+      event.preventDefault(); // Prevent the default touch behavior
+      if (incrementButtonPressed) {
+        incrementCount();
+        vibrateDevice();
+      }
+      incrementButtonPressed = false;
+    });
+
+    incrementButton.addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent the default click behavior
+    });
+
+    const resetButton = document.getElementById('resetButton');
+    resetButton.addEventListener('mousedown', startResetTimer);
+    resetButton.addEventListener('mouseup', cancelResetTimer);
+    resetButton.addEventListener('touchstart', startResetTimer);
+    resetButton.addEventListener('touchend', cancelResetTimer);
+
+    window.addEventListener('beforeunload', function() {
+      localStorage.setItem('count', count.toString());
+      localStorage.setItem('cycleCount', cycleCount.toString());
+    });
+
+    document.addEventListener('click', function(event) {
+      if (event.target.matches('#incrementButton')) {
+        incrementCount();
+        vibrateDevice();
+      }
+    });
+
+    window.addEventListener('dblclick', function(event) {
+      event.preventDefault();
+    });
+
+    let resetTimer;
+
+    function startResetTimer() {
+      resetTimer = setTimeout(resetCount, 1000); // Change the duration as per your requirement (in milliseconds)
+    }
+
+    function cancelResetTimer() {
+      clearTimeout(resetTimer);
+    }
+
+    function incrementCount() {
+      if (count < 10) {
+        count++;
+        counterElement.textContent = count.toString();
+        
+        if (count >= 10) {
+          incrementButton.disabled = true;
+          incrementButton.textContent = "You have finished your Round please Long Press on Reset button to start the next round";
+          cycleCount++;
+          cycleCountElement.textContent = "Rounds: " + cycleCount;
+        }
+      }
+    }
+
+    function resetCount() {
+      count = 0;
+      counterElement.textContent = count.toString();
+      localStorage.setItem('count', count.toString());
+      
+      incrementButton.disabled = false;
+      incrementButton.textContent = "Add";
+    }
+
+    function vibrateDevice() {
+    if ('vibrate' in navigator && !incrementButton.disabled) {
+      navigator.vibrate(200);
+    }
+  }
+
+    // Add the following code for long press functionality on the Reset button
+    let resetButtonPressTimer;
+
+    resetButton.addEventListener('mousedown', function() {
+      resetButtonPressTimer = setTimeout(vibrateDevice, 1000); // Change the duration as per your requirement (in milliseconds)
+    });
+
+    resetButton.addEventListener('mouseup', function() {
+      clearTimeout(resetButtonPressTimer);
+    });
+
+    resetButton.addEventListener('touchstart', function() {
+      resetButtonPressTimer = setTimeout(vibrateDevice, 1000); // Change the duration as per your requirement (in milliseconds)
+    });
+
+    resetButton.addEventListener('touchend', function() {
+      clearTimeout(resetButtonPressTimer);
+    });
+  </script>
+</body>
+</html>
